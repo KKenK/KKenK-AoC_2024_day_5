@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
     page_ordering_rules_dict, pages_to_produce = input_parser.parsed_input
 
-    line_page_order_analyser = LinePageOrderAnalyser(page_ordering_rules_dict)
+    line_page_order_analyser = LineCorrectlyOrderedChecker(page_ordering_rules_dict)
 
     middle_page_number_total = 0
     
