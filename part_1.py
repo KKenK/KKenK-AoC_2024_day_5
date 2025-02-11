@@ -7,7 +7,7 @@ class PageLine():
     def __init__(self, line):
         self.pages = self._make_line(line)
 
-    def _make_line(self, line):
+    def _make(self, line):
 
         pages = []
 
