@@ -5,7 +5,7 @@ Page = namedtuple("Page", ["number", "preceding_pages", "proceeding_pages"])
 
 class PageLine():
     def __init__(self, line):
-        self.pages = self._make_line(line)
+        self.pages = self._make(line)
 
     def _make(self, line):
 
