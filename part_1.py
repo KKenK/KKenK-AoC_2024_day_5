@@ -33,7 +33,7 @@ class LineCorrectlyOrderedChecker():
     def __init__(self, page_ordering_rules_dict):
         self._page_ordering_rules_dict = page_ordering_rules_dict
 
-    def check(self, line):
+    def is_line_correctly_ordered(self, line):
 
         for page in line.pages:
 
