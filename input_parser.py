@@ -15,14 +15,11 @@ class InputParser():
     
         page_ordering_rules = [[int(y) for y in x.split("|")] for x in page_ordering_rules.split("\n")]
 
-        page_ordering_rules_dict = {x[0] : [] for x in page_ordering_rules}
+        page_ordering_rules_dict = {x[0] : set([y[1] for y in page_ordering_rules if y[0] == x[0]]) for x in page_ordering_rules}             
 
-        for ordering_rule in page_ordering_rules:
-            page_ordering_rules_dict[ordering_rule[0]].append(ordering_rule[1])
-        
         pages_to_produce = [[int(y) for y in x.split(",")] for x in pages_to_produce.split("\n")]
 
-        return page_ordering_rules, pages_to_produce
+        return page_ordering_rules_dict, pages_to_produce
 
 if __name__ == "__main__":
 
