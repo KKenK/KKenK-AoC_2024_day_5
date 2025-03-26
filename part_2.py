@@ -93,12 +93,15 @@ class PageRelativeWeightAdder():
         lower_page_weight_values = self._page_ordering_rules_dict[line.pages[current_page_index].number]
         
         lower_page_weight_values = set(lower_page_weight_values).intersection(set(page_numbers))
+                
+        lower_page_weight_value_indexs = [x for x in [page_numbers.index(y) for y in lower_page_weight_values] if x < current_page_index]
         
+
         #Get the lower_page_weight_indexs and remove the intersection with the proceeding
-        if not lower_page_weight_values:
+        if not lower_page_weight_value_indexs:
             return line, weight_increment
         
-        for lower_page_weight in lower_page_weight_values:
+        for lower_page_weight_index in lower_page_weight_value_indexs:
             
             """
             # Check for multiple instances
@@ -106,19 +109,15 @@ class PageRelativeWeightAdder():
             if len(instances_of_lower_page_weight_indexs) >= 2:
                 print(instances_of_lower_page_weight_indexs)
             """
-            page_with_lower_weight_index = page_numbers.index(lower_page_weight)
-                
-            if not hasattr(line.pages[page_with_lower_weight_index], "weight"):
-                continue
 
-            line.pages[page_with_lower_weight_index].weight = weight_increment
+            line.pages[lower_page_weight_index].weight = weight_increment
 
             weight_increment += 1
             
-            if line.pages[page_with_lower_weight_index].number not in self._page_ordering_rules_dict:
+            if line.pages[lower_page_weight_index].number not in self._page_ordering_rules_dict:
                 continue
 
-            self._recursively_traverse_page_ordering_rules_dict_reassigning_weights(line, page_numbers, page_with_lower_weight_index, weight_increment)
+            self._recursively_traverse_page_ordering_rules_dict_reassigning_weights(line, page_numbers, lower_page_weight_index, weight_increment)
         
         return line, weight_increment
 
