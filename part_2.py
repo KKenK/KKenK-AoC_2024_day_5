@@ -68,7 +68,8 @@ class MiddlePageGetter():
 class PageRelativeWeightAdder():
     def __init__(self, page_ordering_rules_dict):
         self._page_ordering_rules_dict = page_ordering_rules_dict    
-    
+        self._line_page_ordering_sequence_dict = {}
+
     def add_relative_page_weights(self, line):
          
         pages_numbers = [x.number for x in line.pages]
@@ -88,6 +89,30 @@ class PageRelativeWeightAdder():
         
         return line
     
+    def create_line_based_rule_dictionary(self, page_numbers):
+        
+        line_rules_dict = {}
+
+        if len(page_numbers) == 1:
+            return page_numbers
+        
+        for page_number in page_numbers:
+
+            if page_number not in self._page_ordering_rules_dict:
+                continue
+
+            subsequent_pages = self._page_ordering_rules_dict[page_number].intersection(page_numbers)
+
+            if subsequent_pages == 0:
+                continue
+
+            for subsequent_page in subsequent_pages:
+                line_rules_dict[page_number] = self._create_line_based_rule_dictionary(subsequent_page, page_numbers)
+
+        return line_rules_dict
+
+    
+
     def _recursively_traverse_page_ordering_rules_dict_reassigning_weights(self, line, page_numbers, current_page_index, weight_increment):
         
         lower_page_weight_values = self._page_ordering_rules_dict[line.pages[current_page_index].number]
@@ -139,11 +164,11 @@ if __name__ == "__main__":
         if line_page_order_analyser.is_line_correctly_ordered(line):
             continue
         
-        line = page_relative_weight_adder.add_relative_page_weights(line)
+        line_rules_dict = page_relative_weight_adder._create_line_based_rule_dictionary()
 
-        correctly_sorted_pages_numbers = [page.number for page in sorted(line.pages, key= lambda x : x.weight)]
+        #correctly_sorted_pages_numbers = [page.number for page in sorted(line.pages, key= lambda x : x.weight)]
         #print(correctly_sorted_pages_numbers)
-        middle_page_number_total += MiddlePageGetter.get_middle_line(correctly_sorted_pages_numbers)
+        #middle_page_number_total += MiddlePageGetter.get_middle_line(correctly_sorted_pages_numbers)
     
     print(middle_page_number_total)
     
