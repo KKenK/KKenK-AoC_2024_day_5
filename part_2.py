@@ -68,17 +68,16 @@ class MiddlePageGetter():
 class PageRelativeWeightAdder():
     def __init__(self, page_ordering_rules_dict):
         self._page_ordering_rules_dict = page_ordering_rules_dict    
-
+        self.page_ordering_rules_line_subdict = {}
     def add_relative_page_weights(self, line):
 
         page_numbers = [page.number for page in line.pages]
      
-        page_ordering_rules_line_subdict = self._create_line_rules_sub_dictionary(page_numbers)
-        line_index_sequence_dictionary = self._create_line_sequence_dictionary(page_numbers, page_ordering_rules_line_subdict)
-
-        #print(page_ordering_rules_line_subdict)
-        #print(line_index_sequence_dictionary)
-        
+        self.page_ordering_rules_line_subdict = self._create_line_rules_sub_dictionary(page_numbers)
+        line_index_sequence_dictionary = self._create_line_rules_index_sequence_dictionary(page_numbers, self.page_ordering_rules_line_subdict)
+        print(self.page_ordering_rules_line_subdict)
+        nested_rules_dict = self._nested_page_rules_dictionary(self.page_ordering_rules_line_subdict.keys())
+        print(nested_rules_dict)
         weight_increment = 0
 
         line_length = len(page_numbers)
@@ -104,12 +103,10 @@ class PageRelativeWeightAdder():
                 index += 1
                 continue
             
-            #print(violating_page_indexs)
-
             page_indexs = page_indexs[:index + 1] + violating_page_indexs + page_indexs[index + 1:]
             
             line_length += len(violating_page_indexs)
-            #print(page_indexs)
+
             index += 1
 
         return line
@@ -149,7 +146,7 @@ class PageRelativeWeightAdder():
         
         return line_rules_sub_dict
 
-    def _create_line_sequence_dictionary(self, page_numbers, page_ordering_rules_line_subdict):
+    def _create_line_rules_index_sequence_dictionary(self, page_numbers, page_ordering_rules_line_subdict):
         
         line_index_sequence_dictionary = {}
 
@@ -161,9 +158,27 @@ class PageRelativeWeightAdder():
             line_index_sequence_dictionary[page] = sorted([page_numbers.index(x) for x in page_ordering_rules_line_subdict[page]])
             
         return line_index_sequence_dictionary
+    
+    def _nested_page_rules_dictionary(self, keys):
 
-        
+        nested_rules_dict = {}
 
+        for item in keys:
+
+            item_values = []  
+            
+            for value in self.page_ordering_rules_line_subdict[item]:
+
+                if value not in self.page_ordering_rules_line_subdict:
+                    item_values.append(value)
+                    continue
+
+                item_values.append(self._nested_page_rules_dictionary([value]))
+
+            nested_rules_dict[item] = item_values
+
+        return nested_rules_dict
+              
 if __name__ == "__main__":
 
     input_parser = input_parser.InputParser(r"C:\Users\kylek\Documents\code\Advent_of_code\2024\Day_5\test_incorrect_line.txt")
@@ -181,16 +196,13 @@ if __name__ == "__main__":
         #line.print_line()  
         if line_page_order_analyser.is_line_correctly_ordered(line):
             continue
-        
+        #print([page.number for page in line.pages])
         page_numbers = [page.number for page in line.pages]
-        page_ordering_rules_line_subdict = page_relative_weight_adder._create_line_rules_sub_dictionary(page_numbers)
-        line_index_sequence_dictionary = page_relative_weight_adder._create_line_sequence_dictionary(page_numbers, page_ordering_rules_line_subdict)
         line = page_relative_weight_adder.add_relative_page_weights(line)
-
 
         correctly_sorted_pages_numbers = [page.number for page in sorted(line.pages, key= lambda x : x.weight)]
     
-        print(correctly_sorted_pages_numbers)
+        #print(correctly_sorted_pages_numbers)
         middle_page_number_total += MiddlePageGetter.get_middle_line(correctly_sorted_pages_numbers)
     
     print(middle_page_number_total)
