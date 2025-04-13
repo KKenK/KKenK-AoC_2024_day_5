@@ -1,36 +1,7 @@
 import input_parser
+import page_line_class
+import select_style_page_sort
 from collections import namedtuple
-
-class Page():
-    def __init__(self, number, preceding_pages, proceeding_pages):
-        self.number =  number
-        self.preceding_pages = preceding_pages
-        self.proceeding_pages = proceeding_pages
-
-class PageLine():
-    def __init__(self, line):
-        self.pages = self._make(line)
-
-    def _make(self, line):
-
-        pages = []
-
-        for i in range(len(line)):
-
-            proceeding_pages = line[i:]
-
-            proceeding_pages.pop(0)
-
-            pages.append(Page(number = line[i], preceding_pages= set(line[:i]), proceeding_pages = set(proceeding_pages)))
-
-        return pages
-
-    def print_line(self):
-        
-        for page in self.pages:
-            print(page.number, sep=",", end=" ")
-        
-        print(" ")
 
 class LineCorrectlyOrderedChecker():
 
@@ -159,54 +130,6 @@ def create_line_rules_index_sequence_dictionary(page_ordering_rules_line_subdict
         
     return line_index_sequence_dictionary
     
-def select_page_sort(page_ordering_rules_line_subdict, line):
-
-    line_pages = [page.number for page in line.pages]
-
-    page_index = 0
-
-    while page_index < len(line_pages):
-
-        current_page = line_pages[page_index]
-
-        if current_page not in page_ordering_rules_line_subdict:
-            page_index += 1
-            continue
-        
-        current_page_values= page_ordering_rules_line_subdict[current_page]
-
-        pages_to_insert_after_current_page = []
-        indexs_of_rule_violating_pages = []
-        
-        for value_page_number in current_page_values:
-
-            value_index = line_pages.index(value_page_number)
- 
-            if value_index > page_index:
-                continue
-
-            pages_to_insert_after_current_page.append(line_pages[value_index])
-            
-            indexs_of_rule_violating_pages.append(value_index)
-
-        if not indexs_of_rule_violating_pages:
-            page_index += 1
-            continue
-
-        line_pages = line_pages[:page_index + 1] + pages_to_insert_after_current_page + line_pages[page_index + 1:]
-
-        indexs_of_rule_violating_pages = sorted(indexs_of_rule_violating_pages, reverse=True)
-
-        for index in indexs_of_rule_violating_pages:
-             line_pages.pop(index)           
-
-        
-        page_index -= len(pages_to_insert_after_current_page) + 1
-
-    line = PageLine(line_pages)
-
-    return line
-
 if __name__ == "__main__":
 
     input_parser = input_parser.InputParser(r"C:\Users\kylek\Documents\code\Advent_of_code\2024\Day_5\input.txt")
@@ -222,7 +145,7 @@ if __name__ == "__main__":
     
     for line in pages_to_produce:
         
-        line = PageLine(line)
+        line = page_line_class.PageLine(line)
 
         if line_page_order_analyser.is_line_correctly_ordered(line):
             continue
@@ -236,11 +159,11 @@ if __name__ == "__main__":
 
         #correctly_sorted_pages_numbers = [page.number for page in sorted(line.pages, key= lambda x : x.weight)]
 
-        correct_select_sorted_page_numbers = select_page_sort(page_ordering_rules_line_subdict, line)
+        correct_select_sorted_page_numbers = select_style_page_sort.select_page_sort(page_ordering_rules_line_subdict, line)
       
         while not line_page_order_analyser.is_line_correctly_ordered(correct_select_sorted_page_numbers):
 
-            correct_select_sorted_page_numbers = select_page_sort(page_ordering_rules_line_subdict, correct_select_sorted_page_numbers)
+            correct_select_sorted_page_numbers = select_style_page_sort.select_page_sort(page_ordering_rules_line_subdict, correct_select_sorted_page_numbers)
         
         correct_select_sorted_page_numbers = [page.number for page in correct_select_sorted_page_numbers.pages]
 
