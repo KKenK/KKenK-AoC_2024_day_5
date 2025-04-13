@@ -68,16 +68,11 @@ class MiddlePageGetter():
 class PageRelativeWeightAdder():
     def __init__(self, page_ordering_rules_dict):
         self._page_ordering_rules_dict = page_ordering_rules_dict    
-        self.page_ordering_rules_line_subdict = {}
-    def add_relative_page_weights(self, line):
+
+    def add_relative_page_weights(self, line, line_index_sequence_dictionary):
 
         page_numbers = [page.number for page in line.pages]
      
-        self.page_ordering_rules_line_subdict = self._create_line_rules_sub_dictionary(page_numbers)
-        line_index_sequence_dictionary = self._create_line_rules_index_sequence_dictionary(page_numbers, self.page_ordering_rules_line_subdict)
-        print(self.page_ordering_rules_line_subdict)
-        nested_rules_dict = self._nested_page_rules_dictionary(self.page_ordering_rules_line_subdict.keys())
-        print(nested_rules_dict)
         weight_increment = 0
 
         line_length = len(page_numbers)
@@ -109,101 +104,152 @@ class PageRelativeWeightAdder():
 
             index += 1
 
-        return line
-    
-    def create_line_based_rule_dictionary(self, page_numbers):
-        
-        line_rules_dict = {}
+        return line    
 
-        if len(page_numbers) == 1:
-            return page_numbers
-        
-        for page_number in page_numbers:
+class LinePageOrderingRulesSubdictionary():
 
-            if page_number not in self._page_ordering_rules_dict:
-                continue
+    def __init__(self, page_ordering_rules_dict):
 
-            subsequent_pages = self._page_ordering_rules_dict[page_number].intersection(page_numbers)
+        self.page_ordering_rules_dict = page_ordering_rules_dict
 
-            if subsequent_pages == 0:
-                continue
-
-            for subsequent_page in subsequent_pages:
-                line_rules_dict[page_number] = self._create_line_based_rule_dictionary(subsequent_page, page_numbers)
-
-        return line_rules_dict
-    
-    def _create_line_rules_sub_dictionary(self, page_numbers):
+    def create_line_rules_sub_dictionary(self, page_ordering_rules_dict, page_numbers):
 
         line_rules_sub_dict = {}
 
         for page in page_numbers:
 
-            if page not in self._page_ordering_rules_dict:
+            if page not in page_ordering_rules_dict:
                 continue    
             
-            line_rules_sub_dict[page] = [x for x in page_numbers if x in self._page_ordering_rules_dict[page]]
+            line_rules_sub_dict[page] = [x for x in page_numbers if x in page_ordering_rules_dict[page]]
         
         return line_rules_sub_dict
 
-    def _create_line_rules_index_sequence_dictionary(self, page_numbers, page_ordering_rules_line_subdict):
-        
-        line_index_sequence_dictionary = {}
 
-        for page in page_numbers:
-            
-            if page not in page_ordering_rules_line_subdict:
+def nested_page_rules_dictionary(self, keys):
+
+    nested_rules_dict = {}
+
+    for item in keys:
+
+        item_values = []  
+        
+        for value in page_ordering_rules_line_subdict[item]:
+
+            if value not in self.page_ordering_rules_line_subdict:
+                item_values.append(value)
                 continue
 
-            line_index_sequence_dictionary[page] = sorted([page_numbers.index(x) for x in page_ordering_rules_line_subdict[page]])
-            
-        return line_index_sequence_dictionary
+            item_values.append(self._nested_page_rules_dictionary([value]))
+
+        nested_rules_dict[item] = item_values
+
+    return nested_rules_dict
+
+def create_line_rules_index_sequence_dictionary(page_ordering_rules_line_subdict, page_numbers):
     
-    def _nested_page_rules_dictionary(self, keys):
+    line_index_sequence_dictionary = {}
 
-        nested_rules_dict = {}
+    for page in page_numbers:
+        
+        if page not in page_ordering_rules_line_subdict:
+            continue
 
-        for item in keys:
+        line_index_sequence_dictionary[page] = sorted([page_numbers.index(x) for x in page_ordering_rules_line_subdict[page]])
+        
+    return line_index_sequence_dictionary
+    
+def select_page_sort(page_ordering_rules_line_subdict, line):
 
-            item_values = []  
+    line_pages = [page.number for page in line.pages]
+
+    page_index = 0
+
+    while page_index < len(line_pages):
+
+        current_page = line_pages[page_index]
+
+        if current_page not in page_ordering_rules_line_subdict:
+            page_index += 1
+            continue
+        
+        current_page_values= page_ordering_rules_line_subdict[current_page]
+
+        pages_to_insert_after_current_page = []
+        indexs_of_rule_violating_pages = []
+        
+        for value_page_number in current_page_values:
+
+            value_index = line_pages.index(value_page_number)
+ 
+            if value_index > page_index:
+                continue
+
+            pages_to_insert_after_current_page.append(line_pages[value_index])
             
-            for value in self.page_ordering_rules_line_subdict[item]:
+            indexs_of_rule_violating_pages.append(value_index)
 
-                if value not in self.page_ordering_rules_line_subdict:
-                    item_values.append(value)
-                    continue
+        if not indexs_of_rule_violating_pages:
+            page_index += 1
+            continue
 
-                item_values.append(self._nested_page_rules_dictionary([value]))
+        line_pages = line_pages[:page_index + 1] + pages_to_insert_after_current_page + line_pages[page_index + 1:]
 
-            nested_rules_dict[item] = item_values
+        indexs_of_rule_violating_pages = sorted(indexs_of_rule_violating_pages, reverse=True)
 
-        return nested_rules_dict
-              
+        for index in indexs_of_rule_violating_pages:
+             line_pages.pop(index)           
+
+        
+        page_index -= len(pages_to_insert_after_current_page) + 1
+
+    line = PageLine(line_pages)
+
+    return line
+
 if __name__ == "__main__":
 
-    input_parser = input_parser.InputParser(r"C:\Users\kylek\Documents\code\Advent_of_code\2024\Day_5\test_incorrect_line.txt")
+    input_parser = input_parser.InputParser(r"C:\Users\kylek\Documents\code\Advent_of_code\2024\Day_5\input.txt")
 
     page_ordering_rules_dict, pages_to_produce = input_parser.parsed_input
 
     line_page_order_analyser = LineCorrectlyOrderedChecker(page_ordering_rules_dict)
     page_relative_weight_adder = PageRelativeWeightAdder(page_ordering_rules_dict)
     
+    line_page_ordering_rules_subdictionary = LinePageOrderingRulesSubdictionary(page_ordering_rules_dict)
+    
     middle_page_number_total = 0
     
     for line in pages_to_produce:
         
         line = PageLine(line)
-        #line.print_line()  
+
         if line_page_order_analyser.is_line_correctly_ordered(line):
             continue
-        #print([page.number for page in line.pages])
+        
         page_numbers = [page.number for page in line.pages]
-        line = page_relative_weight_adder.add_relative_page_weights(line)
+        
+        page_ordering_rules_line_subdict = line_page_ordering_rules_subdictionary.create_line_rules_sub_dictionary(page_ordering_rules_dict, page_numbers)
+        line_index_sequence_dictionary = create_line_rules_index_sequence_dictionary(page_ordering_rules_line_subdict, page_numbers)
 
-        correctly_sorted_pages_numbers = [page.number for page in sorted(line.pages, key= lambda x : x.weight)]
-    
-        #print(correctly_sorted_pages_numbers)
-        middle_page_number_total += MiddlePageGetter.get_middle_line(correctly_sorted_pages_numbers)
+        #line = page_relative_weight_adder.add_relative_page_weights(line, line_index_sequence_dictionary)
+
+        #correctly_sorted_pages_numbers = [page.number for page in sorted(line.pages, key= lambda x : x.weight)]
+
+        correct_select_sorted_page_numbers = select_page_sort(page_ordering_rules_line_subdict, line)
+      
+        while not line_page_order_analyser.is_line_correctly_ordered(correct_select_sorted_page_numbers):
+
+            correct_select_sorted_page_numbers = select_page_sort(page_ordering_rules_line_subdict, correct_select_sorted_page_numbers)
+        
+        correct_select_sorted_page_numbers = [page.number for page in correct_select_sorted_page_numbers.pages]
+
+        #if correctly_sorted_pages_numbers != correct_select_sorted_page_numbers:
+            #print(f"Weighted sort: {correctly_sorted_pages_numbers}")
+            #print(f"Select sort: {correct_select_sorted_page_numbers}")
+            #quit()
+
+        middle_page_number_total += MiddlePageGetter.get_middle_line(correct_select_sorted_page_numbers)
     
     print(middle_page_number_total)
     
