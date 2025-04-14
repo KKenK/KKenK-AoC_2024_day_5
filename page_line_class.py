@@ -1,4 +1,4 @@
-import page
+import page_class
 
 class PageLine():
     def __init__(self, line):
@@ -14,7 +14,7 @@ class PageLine():
 
             proceeding_pages.pop(0)
 
-            pages.append(page.Page(number = line[i], preceding_pages= set(line[:i]), proceeding_pages = set(proceeding_pages)))
+            pages.append(page_class.Page(number = line[i], preceding_pages= set(line[:i]), proceeding_pages = set(proceeding_pages)))
 
         return pages
 
