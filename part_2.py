@@ -1,32 +1,9 @@
 from classes import input_parser
 from classes import page_line
+from classes import line_is_correctly_ordered_checker
 import page_relative_weight_adder_non_recursive
 import select_style_page_sort
 from collections import namedtuple
-
-class LineCorrectlyOrderedChecker():
-
-    def __init__(self, page_ordering_rules_dict):
-        self._page_ordering_rules_dict = page_ordering_rules_dict
-
-    def is_line_correctly_ordered(self, line):
-
-        for page in line.pages:
-
-            if page.number not in self._page_ordering_rules_dict:
-                continue
-
-            if page.preceding_pages.intersection(self._page_ordering_rules_dict[page.number]):
-                return False
-
-            if not page.proceeding_pages.intersection(self._page_ordering_rules_dict[page.number]):
-                
-                if page == line.pages[-1]:
-                    continue
-
-                return False    
-        
-        return True
 
 class PageRelativeWeightAdder():
     def __init__(self, page_ordering_rules_dict):
@@ -115,27 +92,6 @@ class LinePageOrderingRulesSubdictionary():
         
         return line_rules_sub_dict
 
-
-def nested_page_rules_dictionary(self, keys):
-
-    nested_rules_dict = {}
-
-    for item in keys:
-
-        item_values = []  
-        
-        for value in page_ordering_rules_line_subdict[item]:
-
-            if value not in self.page_ordering_rules_line_subdict:
-                item_values.append(value)
-                continue
-
-            item_values.append(self._nested_page_rules_dictionary([value]))
-
-        nested_rules_dict[item] = item_values
-
-    return nested_rules_dict
-
 def create_line_rules_index_sequence_dictionary(page_ordering_rules_line_subdict, page_numbers):
     
     line_index_sequence_dictionary = {}
@@ -154,7 +110,7 @@ if __name__ == "__main__":
     input_parser = input_parser.InputParser(r"C:\Users\kylek\Documents\code\Advent_of_code\2024\Day_5\input.txt")
     page_ordering_rules_dict, pages_to_produce = input_parser.parsed_input
 
-    line_page_order_analyser = LineCorrectlyOrderedChecker(page_ordering_rules_dict)
+    line_page_order_analyser = line_is_correctly_ordered_checker.LineCorrectlyOrderedChecker(page_ordering_rules_dict)
     page_relative_weight_adder = page_relative_weight_adder_non_recursive.PageRelativeWeightAdder(page_ordering_rules_dict)
     
     page_relative_weight_adder = PageRelativeWeightAdder(page_ordering_rules_dict)   
