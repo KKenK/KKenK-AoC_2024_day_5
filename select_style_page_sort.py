@@ -1,4 +1,4 @@
-import page_line_class
+from classes import page_line
 
 def select_page_sort(page_ordering_rules_line_subdict, line):
 
@@ -44,6 +44,6 @@ def select_page_sort(page_ordering_rules_line_subdict, line):
         
         page_index -= len(pages_to_insert_after_current_page) + 1
 
-    line = page_line_class.PageLine(line_pages)
+    line = page_line.PageLine(line_pages)
 
     return line

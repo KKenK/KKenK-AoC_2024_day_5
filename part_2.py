@@ -1,5 +1,5 @@
-import input_parser
-import page_line_class
+from classes import input_parser
+from classes import page_line
 import page_relative_weight_adder_non_recursive
 import select_style_page_sort
 from collections import namedtuple
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     
     for line in pages_to_produce:
         
-        line = page_line_class.PageLine(line)
+        line = page_line.PageLine(line)
 
         if line_page_order_analyser.is_line_correctly_ordered(line):
             continue
