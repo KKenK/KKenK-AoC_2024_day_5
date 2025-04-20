@@ -1,6 +1,7 @@
 from classes import input_parser
 from classes import page_line
 from classes import line_is_correctly_ordered_checker
+from modules.get_middle_page import get_middle_page
 import page_relative_weight_adder_non_recursive
 import select_style_page_sort
 from collections import namedtuple
@@ -63,15 +64,6 @@ class PageRelativeWeightAdder():
             line, weight_increment = self._recursively_traverse_page_ordering_rules_dict_reassigning_weights(line = line, page_numbers = page_numbers, initiating_page_index = initiating_page_index, current_page_index = lower_page_weight_index, weight_increment = weight_increment)
         
         return line, weight_increment
-
-class MiddlePageGetter():
-    @staticmethod
-    def get_middle_line(line):
-        
-        if len(line) % 2 != 0:
-            return line[len(line) // 2]
-
-        return line[(len(line) // 2) - 1]
 
 class LinePageOrderingRulesSubdictionary():
 
@@ -151,7 +143,7 @@ if __name__ == "__main__":
             quit()
         #[print(f"page number: {x.number}, page weight: {x.weight}") for x in line.pages]
 
-        middle_page_number_total += MiddlePageGetter.get_middle_line(correctly_sorted_pages_numbers)
+        middle_page_number_total += get_middle_page(correctly_sorted_pages_numbers)
     
     print(middle_page_number_total)
     
